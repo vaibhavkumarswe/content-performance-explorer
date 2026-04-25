@@ -1,12 +1,14 @@
-import { Box, Typography } from "@mui/material";
+import { Routes, Route } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import Test from "./pages/Test";
+import "./App.css";
 
 function App() {
   return (
-    <Box>
-      <Typography variant="h1" align="center" mt={4}>
-        Hello, World!
-      </Typography>
-    </Box>
+    <Routes>
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/test" element={<Test />} />
+    </Routes>
   );
 }
 
