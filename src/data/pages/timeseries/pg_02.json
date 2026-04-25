@@ -1,0 +1,162 @@
+{
+  "data": {
+    "page_id": "pg_02",
+    "points": [
+      {
+        "date": "2025-03-01",
+        "pageviews": 522,
+        "unique_visitors": 339
+      },
+      {
+        "date": "2025-03-02",
+        "pageviews": 196,
+        "unique_visitors": 144
+      },
+      {
+        "date": "2025-03-03",
+        "pageviews": 349,
+        "unique_visitors": 251
+      },
+      {
+        "date": "2025-03-04",
+        "pageviews": 445,
+        "unique_visitors": 320
+      },
+      {
+        "date": "2025-03-05",
+        "pageviews": 302,
+        "unique_visitors": 223
+      },
+      {
+        "date": "2025-03-06",
+        "pageviews": 300,
+        "unique_visitors": 225
+      },
+      {
+        "date": "2025-03-07",
+        "pageviews": 404,
+        "unique_visitors": 271
+      },
+      {
+        "date": "2025-03-08",
+        "pageviews": 388,
+        "unique_visitors": 241
+      },
+      {
+        "date": "2025-03-09",
+        "pageviews": 352,
+        "unique_visitors": 245
+      },
+      {
+        "date": "2025-03-10",
+        "pageviews": 447,
+        "unique_visitors": 320
+      },
+      {
+        "date": "2025-03-11",
+        "pageviews": 324,
+        "unique_visitors": 227
+      },
+      {
+        "date": "2025-03-12",
+        "pageviews": 533,
+        "unique_visitors": 344
+      },
+      {
+        "date": "2025-03-13",
+        "pageviews": 294,
+        "unique_visitors": 189
+      },
+      {
+        "date": "2025-03-14",
+        "pageviews": 215,
+        "unique_visitors": 139
+      },
+      {
+        "date": "2025-03-15",
+        "pageviews": 405,
+        "unique_visitors": 294
+      },
+      {
+        "date": "2025-03-16",
+        "pageviews": 383,
+        "unique_visitors": 289
+      },
+      {
+        "date": "2025-03-17",
+        "pageviews": 305,
+        "unique_visitors": 218
+      },
+      {
+        "date": "2025-03-18",
+        "pageviews": 183,
+        "unique_visitors": 121
+      },
+      {
+        "date": "2025-03-19",
+        "pageviews": 336,
+        "unique_visitors": 214
+      },
+      {
+        "date": "2025-03-20",
+        "pageviews": 363,
+        "unique_visitors": 249
+      },
+      {
+        "date": "2025-03-21",
+        "pageviews": 260,
+        "unique_visitors": 195
+      },
+      {
+        "date": "2025-03-22",
+        "pageviews": 466,
+        "unique_visitors": 318
+      },
+      {
+        "date": "2025-03-23",
+        "pageviews": 370,
+        "unique_visitors": 256
+      },
+      {
+        "date": "2025-03-24",
+        "pageviews": 441,
+        "unique_visitors": 333
+      },
+      {
+        "date": "2025-03-25",
+        "pageviews": 393,
+        "unique_visitors": 295
+      },
+      {
+        "date": "2025-03-26",
+        "pageviews": 520,
+        "unique_visitors": 388
+      },
+      {
+        "date": "2025-03-27",
+        "pageviews": 398,
+        "unique_visitors": 305
+      },
+      {
+        "date": "2025-03-28",
+        "pageviews": 525,
+        "unique_visitors": 355
+      },
+      {
+        "date": "2025-03-29",
+        "pageviews": 513,
+        "unique_visitors": 333
+      },
+      {
+        "date": "2025-03-30",
+        "pageviews": 518,
+        "unique_visitors": 392
+      },
+      {
+        "date": "2025-03-31",
+        "pageviews": 275,
+        "unique_visitors": 206
+      }
+    ]
+  }
+}

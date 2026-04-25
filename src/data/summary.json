@@ -1,0 +1,24 @@
+{
+  "data": {
+    "pageviews": {
+      "value": 45231,
+      "trend": 12.3
+    },
+    "unique_visitors": {
+      "value": 28102,
+      "trend": 8.7
+    },
+    "avg_time_on_page": {
+      "value": 154,
+      "trend": 5.2
+    },
+    "bounce_rate": {
+      "value": 42.1,
+      "trend": -1.8
+    }
+  },
+  "period": {
+    "start_date": "2025-03-01",
+    "end_date": "2025-03-31"
+  }
+}
