@@ -21,7 +21,7 @@ A React-based dashboard for exploring content performance metrics, built with Ty
 1. Clone the repository:
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/vaibhavkumarswe/content-performance-explorer
    cd content-performance-explorer
    ```
 
