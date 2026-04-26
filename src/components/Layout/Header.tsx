@@ -1,54 +1,34 @@
-import { useMemo, useState } from "react";
-import dayjs, { type Dayjs } from "dayjs";
 import {
   AppBar,
-  Box,
   Button,
   Chip,
   Stack,
   Toolbar,
   Typography,
 } from "@mui/material";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DateRangePicker, type DateRange } from "@mui/x-date-pickers-pro";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import CloseIcon from "@mui/icons-material/Close";
-
-function formatRangeLabel(range: DateRange<Dayjs>) {
-  const [start, end] = range;
-
-  if (!start?.isValid() || !end?.isValid()) {
-    return "Select date range";
-  }
-
-  return `${start.format("MMM D")} - ${end.format("MMM D, YYYY")}`;
-}
+import { useDashboardContext } from "../../context/DashboardContext";
 
 export function Header() {
-  const [selectedRange, setSelectedRange] = useState<DateRange<Dayjs>>([
-    dayjs("2025-03-01"),
-    dayjs("2025-03-31"),
-  ]);
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const { state, dispatch } = useDashboardContext();
+  const { search, sectionFilter, statusFilter, monthlyRange } = state;
 
-  const dateLabel = useMemo(
-    () => formatRangeLabel(selectedRange),
-    [selectedRange],
-  );
-
-  const handleOpenDatePicker = () => {
-    setPickerOpen(true);
-  };
-
-  const handleCloseDatePicker = () => {
-    setPickerOpen(false);
-  };
-
-  const handleRangeChange = (newValue: DateRange<Dayjs>) => {
-    setSelectedRange(newValue);
-  };
+  const filters = [
+    {
+      value: search,
+      delete: () => dispatch({ type: "SET_SEARCH", payload: "" }),
+    },
+    {
+      value: sectionFilter,
+      delete: () => dispatch({ type: "SET_SECTION_FILTER", payload: "" }),
+    },
+    {
+      value: statusFilter,
+      delete: () => dispatch({ type: "SET_STATUS_FILTER", payload: "" }),
+    },
+  ].filter((filter) => filter.value);
 
   return (
     <AppBar
@@ -68,7 +48,6 @@ export function Header() {
           justifyContent: { xs: "center", md: "space-between" },
           px: { xs: 2, md: 4 },
           py: { xs: 2, md: 1 },
-          // flexWrap: "wrap",
         }}
       >
         <Typography
@@ -102,19 +81,25 @@ export function Header() {
               justifyContent: "flex-end",
             }}
           >
-            <Chip
-              label="Blog"
-              variant="outlined"
-              sx={{ borderRadius: 999, bgcolor: "rgba(255,255,255,0.6)" }}
-              onDelete={() => {}}
-              deleteIcon={<CloseIcon />}
-            />
+            {filters.map((filter, index) => (
+              <Chip
+                key={`${filter.value}-${index}`}
+                label={filter.value}
+                variant="outlined"
+                sx={{ borderRadius: 999, bgcolor: "rgba(255,255,255,0.6)" }}
+                onDelete={filter.delete}
+                deleteIcon={<CloseIcon />}
+              />
+            ))}
             <Chip
               clickable
               icon={<CalendarMonthIcon sx={{ fontSize: 18 }} />}
-              label={dateLabel}
+              label={
+                monthlyRange
+                  ? `${monthlyRange.start_date} to ${monthlyRange.end_date}`
+                  : "Select Date Range"
+              }
               variant="outlined"
-              onClick={handleOpenDatePicker}
               sx={{ borderRadius: 999, bgcolor: "rgba(255,255,255,0.6)" }}
             />
           </Stack>
@@ -130,41 +115,11 @@ export function Header() {
               bgcolor: "rgba(255,255,255,0.5)",
               alignSelf: { xs: "stretch", sm: "auto" },
             }}
+            onClick={() => dispatch({ type: "CLEAR_FILTERS" })}
           >
             refresh
           </Button>
         </Stack>
-
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <Box
-            sx={{
-              position: "absolute",
-              left: -9999,
-              width: 0,
-              height: 0,
-              overflow: "hidden",
-            }}
-          >
-            <DateRangePicker
-              calendars={1}
-              open={pickerOpen}
-              onClose={handleCloseDatePicker}
-              value={selectedRange}
-              onChange={handleRangeChange}
-              slotProps={{
-                field: {
-                  style: {
-                    position: "absolute",
-                    left: -9999,
-                    width: 0,
-                    height: 0,
-                    overflow: "hidden",
-                  },
-                },
-              }}
-            />
-          </Box>
-        </LocalizationProvider>
       </Toolbar>
     </AppBar>
   );

@@ -53,7 +53,13 @@ export const PagesTableColumns: TableHeaderData[] = [
   },
 ];
 
-export function PagesTableData({ data }: { data: PageData[] }): JSX.Element {
+export function PagesTableData({
+  data,
+  handleRowClick,
+}: {
+  data: PageData[];
+  handleRowClick: (id: string) => void;
+}): JSX.Element {
   return (
     <>
       {data.map((obj: PageData) => {
@@ -61,6 +67,7 @@ export function PagesTableData({ data }: { data: PageData[] }): JSX.Element {
           <TableRow
             key={`${obj?.id}`}
             sx={{
+              cursor: "pointer",
               "& td": {
                 paddingTop: "15px",
                 paddingBottom: "15px",
@@ -69,9 +76,13 @@ export function PagesTableData({ data }: { data: PageData[] }): JSX.Element {
               "& td:first-of-type": {
                 paddingLeft: "0px",
               },
+              "&:hover": {
+                backgroundColor: "action.hover",
+              },
               overflow: "auto",
               width: "100%",
             }}
+            onClick={() => handleRowClick(obj.id)}
           >
             <TableCell align="left">
               <Typography
@@ -207,7 +218,16 @@ export function PagesMobileCard({ data }: { data: PageData[] }): JSX.Element {
           >
             <CardContent sx={{ p: 3 }}>
               <Stack spacing={2}>
-                <Box sx={{ display: "flex", flexDirection: "row", gap: 0.5, alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    gap: 0.5,
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                  }}
+                >
                   <Box>
                     <Typography
                       variant="h6"

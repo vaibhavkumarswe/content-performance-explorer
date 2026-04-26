@@ -75,6 +75,7 @@ export interface DataTableProps {
 export interface PaginationProps {
   page: number;
   total: number;
+  pageSize?: number;
   onPageChange: (
     event: React.MouseEvent<HTMLButtonElement> | null,
     page: number,
