@@ -1,64 +1,27 @@
-import {
-  Box,
-  Button,
-  Chip,
-  Container,
-  IconButton,
-  InputBase,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
-import { alpha, styled, type TypographyVariant } from "@mui/material/styles";
-import SearchIcon from "@mui/icons-material/Search";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import CloseIcon from "@mui/icons-material/Close";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
-import {
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-  CartesianGrid,
-  Area,
-  AreaChart,
-  Tooltip,
-} from "recharts";
-import { StatCard } from "../../components/UI/StatCard";
+import { Box, Container } from "@mui/material";
 import { Header } from "../../components/Layout/Header";
-import { DataTable } from "../../components/UI/DataTable";
+import { StatCardsGrid } from "../../components/Dashboard/StatCardsGrid";
+import { PagesTableSection } from "../../components/Dashboard/PagesTableSection";
+import { PageDetailsPanel } from "../../components/Dashboard/PageDetailsPanel";
 
 import CTACards from "../../data/summary.json";
 import Pages from "../../data/pages/pages.json";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useDashboardContext } from "../../context/DashboardContext";
 import { transformStats } from "../../utils/utilityFn";
 import type {
   PageData,
+  PageDetailsResponse,
   PagesResponse,
+  Point,
   StatItem,
   SummaryResponse,
 } from "../../types/api";
 import { useNotification } from "../../hooks/useNotification";
-import {
-  PagesMobileCard,
-  PagesTableColumns,
-  PagesTableData,
-} from "../../components/UI/PagesTable";
-import { StatLoading } from "../../components/UI/Loading/StatLoading";
-
-const Search = styled("div")(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  gap: theme.spacing(1),
-  padding: theme.spacing(0.8, 1.5),
-  border: `1.5px solid ${theme.palette.divider}`,
-  borderRadius: 999,
-  background: alpha(theme.palette.common.white, 0.75),
-  width: "100%",
-}));
 
 export default function Dashboard() {
-  const { showError } = useNotification();
+  const { showError, showInfo } = useNotification();
+
   const [data, setData] = useState<{
     summary: {
       data: StatItem[];
@@ -69,6 +32,12 @@ export default function Dashboard() {
       data: PageData[];
       loading: boolean;
       error: string;
+    };
+    sectionFilterData: string[];
+    statusFilterData: string[];
+    period: {
+      start_date: string;
+      end_date: string;
     };
   }>({
     summary: {
@@ -81,22 +50,76 @@ export default function Dashboard() {
       loading: true,
       error: "",
     },
+    sectionFilterData: [],
+    statusFilterData: [],
+    period: {
+      start_date: "",
+      end_date: "",
+    },
   });
 
-  const dailyViewsData = [
-    { day: 1, views: 40 },
-    { day: 2, views: 48 },
-    { day: 3, views: 55 },
-    { day: 4, views: 62 },
-    { day: 5, views: 50 },
-    { day: 6, views: 35 },
-    { day: 7, views: 32 },
-    { day: 8, views: 38 },
-    { day: 9, views: 45 },
-    { day: 10, views: 44 },
-    { day: 11, views: 49 },
-    { day: 12, views: 58 },
-  ];
+  const [selectedPage, setSelectedPage] = useState<{
+    data: PageData | null;
+    dailyViewsData?: Point[];
+    loading: boolean;
+    error: string;
+  }>({
+    data: null,
+    dailyViewsData: undefined,
+    loading: false,
+    error: "",
+  });
+
+  const { state: dashboardState, dispatch } = useDashboardContext();
+  const {
+    search,
+    sectionFilter,
+    statusFilter,
+    page,
+    pageSize,
+    sortBy,
+    sortDirection,
+  } = dashboardState;
+
+  const filteredPages = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+
+    return data.pages.data.filter((page) => {
+      const matchesSearch =
+        !normalizedSearch ||
+        [page.title, page.path, page.section, page.status].some((field) =>
+          field.toLowerCase().includes(normalizedSearch),
+        );
+
+      const matchesSection = !sectionFilter || page.section === sectionFilter;
+      const matchesStatus = !statusFilter || page.status === statusFilter;
+
+      return matchesSearch && matchesSection && matchesStatus;
+    });
+  }, [data.pages.data, search, sectionFilter, statusFilter]);
+
+  const sortedPages = useMemo(() => {
+    if (!sortBy) return filteredPages;
+
+    const sorted = [...filteredPages].sort((a, b) => {
+      const aVal = a[sortBy as keyof PageData];
+      const bVal = b[sortBy as keyof PageData];
+
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
+      }
+
+      const aStr = String(aVal || "");
+      const bStr = String(bVal || "");
+      const cmp = aStr.localeCompare(bStr);
+      return sortDirection === "asc" ? cmp : -cmp;
+    });
+
+    return sorted;
+  }, [filteredPages, sortBy, sortDirection]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedPages.length / pageSize));
+  const effectivePage = Math.min(page, totalPages);
 
   async function fetchSummaryData() {
     try {
@@ -115,7 +138,18 @@ export default function Dashboard() {
           loading: false,
           error: "",
         },
+        period: {
+          start_date: response.period?.start_date || "",
+          end_date: response.period?.end_date || "",
+        },
       }));
+      dispatch({
+        type: "SET_MONTHLY_RANGE",
+        payload: {
+          start_date: response.period?.start_date || "",
+          end_date: response.period?.end_date || "",
+        },
+      });
 
       return response;
     } catch {
@@ -137,6 +171,12 @@ export default function Dashboard() {
 
       await new Promise((resolve) => setTimeout(resolve, 1200));
       const response = Pages as PagesResponse;
+      const sectionFilterData = Array.from(
+        new Set(response.data.map((page) => page.section)),
+      ).sort();
+      const statusFilterData = Array.from(
+        new Set(response.data.map((page) => page.status)),
+      ).sort();
 
       setData((prev) => ({
         ...prev,
@@ -145,6 +185,8 @@ export default function Dashboard() {
           loading: false,
           error: "",
         },
+        sectionFilterData,
+        statusFilterData,
       }));
       return Pages;
     } catch {
@@ -164,7 +206,42 @@ export default function Dashboard() {
     }
 
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const paginatedPages = useMemo(() => {
+    const start = (effectivePage - 1) * pageSize;
+    return sortedPages.slice(start, start + pageSize);
+  }, [sortedPages, effectivePage, pageSize]);
+
+  const handleRowClick = async (id: string) => {
+    try {
+      setSelectedPage({ data: null, loading: true, error: "" });
+      const page = data.pages.data.find((p) => p.id === id) || null;
+      let pgId = parseInt(id.split("_")[1]);
+      if (pgId > 10) {
+        pgId = Math.floor(Math.random() * 10) + 1;
+      }
+
+      const dailyViewsData = (await import(
+        `../../data/pages/timeseries/pg_${pgId}.json`
+      )) as PageDetailsResponse;
+      if (parseInt(id.split("_")[1]) > 10) {
+        showInfo(
+          `Daily Views for this page is not available, showing data for pg_${pgId} instead`,
+        );
+      }
+      setSelectedPage({
+        data: page,
+        dailyViewsData: dailyViewsData.data.points,
+        loading: false,
+        error: "",
+      });
+    } catch {
+      showError("Failed to load page details");
+      setSelectedPage({ data: null, loading: false, error: "Failed to load" });
+    }
+  };
 
   return (
     <Box
@@ -178,21 +255,10 @@ export default function Dashboard() {
       <Header />
 
       <Container maxWidth="xl" sx={{ py: 3 }}>
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "repeat(4, 1fr)" },
-            gap: 2,
-            mb: 2.5,
-          }}
-        >
-          {!data.summary.loading &&
-            data.summary?.data?.map((item) => (
-              <StatCard key={item.label} item={item} />
-            ))}
-          {data.summary.loading &&
-            [1, 2, 3, 4].map((_, idx) => <StatLoading key={idx} />)}
-        </Box>
+        <StatCardsGrid
+          data={data.summary.data}
+          loading={data.summary.loading}
+        />
 
         <Box
           sx={{
@@ -201,264 +267,26 @@ export default function Dashboard() {
             gap: 2,
           }}
         >
-          <Paper
-            sx={{
-              p: 2,
-              borderRadius: 3,
-              border: "1.5px solid rgba(47,42,36,0.5)",
-              bgcolor: "rgba(255,255,255,0.28)",
-              boxShadow: "none",
-              maxHeight: "660px",
-              overflow: "hidden",
-              pb: 3,
-              height: "fit-content",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <Box
-              sx={{
-                position: "sticky",
-                top: 0,
-                zIndex: 1,
-                bgcolor: "rgba(255,255,255,0.28)",
-                pb: 2,
-                mb: 1,
-              }}
-            >
-              <Stack spacing={2}>
-                <Search>
-                  <SearchIcon sx={{ color: "text.secondary" }} />
-                  <InputBase placeholder="search pages..." sx={{ flex: 1 }} />
-                </Search>
-
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  sx={{ justifyContent: "flex-end" }}
-                >
-                  <Chip
-                    label="Section"
-                    deleteIcon={<ArrowDropDownIcon />}
-                    onDelete={() => {}}
-                    variant="outlined"
-                    sx={{ borderRadius: 999 }}
-                  />
-                  <Chip
-                    label="Status"
-                    deleteIcon={<ArrowDropDownIcon />}
-                    onDelete={() => {}}
-                    variant="outlined"
-                    sx={{ borderRadius: 999 }}
-                  />
-                </Stack>
-              </Stack>
-            </Box>
-
-            <Box sx={{ flex: 1, overflow: "hidden" }}>
-              <DataTable
-                loading={data.pages.loading}
-                tableBody={<PagesTableData data={data.pages.data} />}
-                manualResponsiveBody={true}
-                ManualResponsiveBodyComponent={
-                  <PagesMobileCard data={data.pages.data} />
-                }
-                tableHeaderData={PagesTableColumns}
-                tableDataCount={data.pages.data.length}
-                isPaginationVisible={true}
-                tableBodyLoaderRowCustomStyles={{
-                  "& td:first-of-type": {
-                    paddingLeft: "0px",
-                  },
-                }}
-                tableHeadRowCustomStyles={{
-                  "& th:first-of-type": {
-                    paddingLeft: "0px",
-                    fontWeight: 700,
-                    color: "primary.main",
-                  },
-                }}
-                tableBodyCustomStyles={{
-                  "& tr:last-child td": {
-                    border: 0,
-                  },
-                }}
-                loadingRowsNum={4}
-                scrollable={true}
-                maxHeight={470}
-              />
-            </Box>
-          </Paper>
-
-          <Paper
-            sx={{
-              p: 2,
-              borderRadius: 3,
-              border: "1.5px solid rgba(47,42,36,0.5)",
-              bgcolor: "rgba(255,255,255,0.28)",
-              boxShadow: "none",
-              height: "fit-content",
-            }}
-          >
-            <Stack spacing={1.5}>
-              <Stack
-                direction="row"
-                sx={{
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Typography
-                  variant="h5"
-                  sx={{
-                    fontFamily: '"Comic Sans MS", "Segoe Script", cursive',
-                    fontWeight: 700,
-                  }}
-                >
-                  Launch Post
-                </Typography>
-                <IconButton size="small">
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              </Stack>
-
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{
-                  mb: 1,
-                  fontFamily: '"Comic Sans MS", "Segoe Script", cursive',
-                }}
-              >
-                /blog/product-launch
-              </Typography>
-
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: {
-                    xs: "1fr",
-                  },
-                  borderRadius: 2,
-                  bgcolor: (theme) => alpha(theme.palette.grey[200], 0.3),
-                }}
-              >
-                {[
-                  { label: "Section", value: "Blog", highlight: false },
-                  {
-                    label: "Status",
-                    value: (
-                      <Chip
-                        label="Published"
-                        color="success"
-                        variant="outlined"
-                        size="small"
-                      />
-                    ),
-                  },
-                  { label: "First published", value: "Feb 15, 2025" },
-                  { label: "Total views", value: "12,401", variant: "h5" },
-                  { label: "Uniques", value: "8,932" },
-                  { label: "Avg. time", value: "3m 21s" },
-                ].map((item, i) => (
-                  <Box
-                    key={i}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      p: 1.2,
-                      borderRadius: 1.5,
-                      bgcolor: item.highlight
-                        ? (theme) => alpha(theme.palette.primary.main, 0.08)
-                        : "transparent",
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        fontWeight: 600,
-                        fontFamily: '"Comic Sans MS", "Segoe Script", cursive',
-                      }}
-                    >
-                      {item.label}
-                    </Typography>
-
-                    <Box>
-                      {typeof item.value === "string" ? (
-                        <Typography
-                          variant={
-                            typeof item.variant === "string"
-                              ? (item.variant as TypographyVariant)
-                              : "body1"
-                          }
-                          sx={{
-                            fontWeight: 600,
-                            fontFamily:
-                              '"Comic Sans MS", "Segoe Script", cursive',
-                          }}
-                        >
-                          {item.value}
-                        </Typography>
-                      ) : (
-                        item.value
-                      )}
-                    </Box>
-                  </Box>
-                ))}
-              </Box>
-
-              <Box sx={{ mt: 1 }}>
-                <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 700 }}>
-                  Daily views
-                </Typography>
-                <Paper
-                  variant="outlined"
-                  sx={{
-                    height: 180,
-                    borderRadius: 2,
-                    p: 1.5,
-                    bgcolor: "rgba(232,238,255,0.65)",
-                  }}
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={dailyViewsData}>
-                      <CartesianGrid stroke="#ccc" strokeDasharray="3 3" />
-                      <XAxis dataKey="day" />
-                      <YAxis />
-                      <Tooltip />
-                      <Area
-                        type="monotone"
-                        dataKey="views"
-                        stroke="#8884d8"
-                        fill="#8884d8"
-                        strokeWidth={2}
-                        dot={false}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </Paper>
-              </Box>
-
-              <Stack direction="row" spacing={1} sx={{ pt: 1 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<OpenInNewIcon />}
-                  sx={{ borderRadius: 999 }}
-                >
-                  open page
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<CompareArrowsIcon />}
-                  sx={{ borderRadius: 999 }}
-                >
-                  compare
-                </Button>
-              </Stack>
-            </Stack>
-          </Paper>
+          <PagesTableSection
+            loading={data.pages.loading}
+            sectionFilterData={data.sectionFilterData}
+            statusFilterData={data.statusFilterData}
+            sortedPages={sortedPages}
+            paginatedPages={paginatedPages}
+            effectivePage={effectivePage}
+            handleRowClick={handleRowClick}
+          />
+          <PageDetailsPanel
+            selectedPage={selectedPage}
+            onClose={() =>
+              setSelectedPage({
+                data: null,
+                dailyViewsData: undefined,
+                loading: false,
+                error: "",
+              })
+            }
+          />
         </Box>
       </Container>
     </Box>

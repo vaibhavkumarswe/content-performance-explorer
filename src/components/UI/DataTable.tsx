@@ -70,13 +70,14 @@ export function DataTable({
     const {
       page,
       total,
+      pageSize,
       onPageChange,
       onPageSizeChange,
       pageSizeOptions = [10, 20, 50],
     } = pagination;
 
-    const pageSize = 5;
-    const totalPages = Math.ceil(total / pageSize);
+    const actualPageSize = pageSize ?? pageSizeOptions[0];
+    const totalPages = Math.ceil(total / actualPageSize) || 1;
 
     const handlePageSizeChange = (event: SelectChangeEvent<number>) => {
       onPageSizeChange?.(event);
@@ -119,7 +120,7 @@ export function DataTable({
         <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
           <Select
             variant="standard"
-            value={pageSize}
+            value={actualPageSize}
             onChange={handlePageSizeChange}
             disableUnderline
             sx={{

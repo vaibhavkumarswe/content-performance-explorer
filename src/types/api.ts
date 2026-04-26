@@ -63,3 +63,19 @@ export interface PageData {
   avg_time_on_page: number
   bounce_rate: number
 }
+
+
+export interface PageDetailsResponse {
+  data: pageTimeseriesResponse
+}
+
+export interface pageTimeseriesResponse {
+  page_id: string
+  points: Point[]
+}
+
+export interface Point {
+  date: string
+  pageviews: number
+  unique_visitors: number
+}
