@@ -55,10 +55,10 @@ export function StatCard({ item }: { item: StatItem }) {
               fontWeight: 600,
             }}
           >
-            8.4%
+            {trend}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            vs prev period
+            vs prev period ({item.prev ? item.prev : ""})
           </Typography>
         </Stack>
       </CardContent>

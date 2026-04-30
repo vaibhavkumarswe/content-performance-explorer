@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Box,
   FormControl,
@@ -20,6 +21,8 @@ import {
   PagesTableColumns,
   PagesTableData,
 } from "../UI/PagesTable";
+import { useSearchParams } from "react-router-dom";
+
 
 const Search = styled("div")(({ theme }) => ({
   display: "flex",
@@ -33,7 +36,7 @@ const Search = styled("div")(({ theme }) => ({
 }));
 
 interface PagesTableSectionProps {
-//   data: PageData[];
+  //   data: PageData[];
   loading: boolean;
   sectionFilterData: string[];
   statusFilterData: string[];
@@ -55,17 +58,36 @@ export function PagesTableSection({
   const { state, dispatch } = useDashboardContext();
   const { search, sectionFilter, statusFilter, pageSize } = state;
   const pageSizeOptions = [5, 10, 15, 20];
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch({ type: "SET_SEARCH", payload: event.target.value });
+    const val = event.target.value;
+    dispatch({ type: "SET_SEARCH", payload: val });
+    setSearchParams((prev)=>{
+      const oldState = new URLSearchParams(prev);
+      oldState.set('search', val);
+      return oldState;
+    });
   };
 
   const handleSectionFilterChange = (event: SelectChangeEvent<string>) => {
-    dispatch({ type: "SET_SECTION_FILTER", payload: event.target.value });
+    const val = event.target.value;
+    dispatch({ type: "SET_SECTION_FILTER", payload: val });
+    setSearchParams((prev)=>{
+      const oldState = new URLSearchParams(prev);
+      oldState.set('section', val);
+      return oldState;
+    });
   };
 
   const handleStatusFilterChange = (event: SelectChangeEvent<string>) => {
-    dispatch({ type: "SET_STATUS_FILTER", payload: event.target.value });
+    const val = event.target.value;
+    dispatch({ type: "SET_STATUS_FILTER", payload: val });
+    setSearchParams((prev)=>{
+      const oldState = new URLSearchParams(prev);
+      oldState.set('status', val);
+      return oldState;
+    });
   };
 
   const handlePageChange = (

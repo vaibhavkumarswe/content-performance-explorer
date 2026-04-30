@@ -4,6 +4,7 @@ export type StatItem = {
   value: string;
   rawValue: number;
   trend: number;
+  prev: number
 };
 
 export interface SummaryResponse {
@@ -21,61 +22,64 @@ export interface SummaryData {
 export interface Pageviews {
   value: number;
   trend: number;
+  prevValue: number;
 }
 
 export interface UniqueVisitors {
   value: number;
   trend: number;
+  prevValue: number;
 }
 
 export interface AvgTimeOnPage {
   value: number;
   trend: number;
+  prevValue: number;
 }
 
 export interface BounceRate {
   value: number;
   trend: number;
+  prevValue: number;
 }
 
 export interface Period {
   start_date: string;
   end_date: string;
+  prev_start_date: string;
+  prev_end_date: string;
 }
-
-
 
 //Pages
 
 export interface PagesResponse {
-  data: PageData[]
+  data: PageData[];
 }
 
 export interface PageData {
-  id: string
-  path: string
-  title: string
-  section: string
-  status: string
-  first_published: string
-  pageviews: number
-  unique_visitors: number
-  avg_time_on_page: number
-  bounce_rate: number
+  id: string;
+  path: string;
+  title: string;
+  section: string;
+  status: string;
+  first_published: string;
+  pageviews: number;
+  unique_visitors: number;
+  avg_time_on_page: number;
+  bounce_rate: number;
 }
 
-
 export interface PageDetailsResponse {
-  data: pageTimeseriesResponse
+  data: pageTimeseriesResponse;
 }
 
 export interface pageTimeseriesResponse {
-  page_id: string
-  points: Point[]
+  page_id: string;
+  points: Point[];
 }
 
 export interface Point {
-  date: string
-  pageviews: number
-  unique_visitors: number
+  date: string;
+  pageviews: number;
+  unique_visitors: number;
 }

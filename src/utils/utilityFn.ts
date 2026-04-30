@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import type { SummaryData } from "../types/api";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -10,13 +11,15 @@ export const formatTime = (seconds: number): string => {
 export const transformStats = (data: SummaryData): any[] => {
   return Object.entries(data).map(([key, value]) => {
     let formattedValue = value.value;
-
+    let formattedprevValue = value.prevValue;
     if (key === "avg_time_on_page") {
       formattedValue = formatTime(value.value);
+      formattedprevValue = formatTime(value.prevValue);
     }
 
     if (key === "bounce_rate") {
       formattedValue = `${value.value}%`;
+      formattedprevValue = `${value.prevValue}%`;
     }
 
     return {
@@ -25,6 +28,12 @@ export const transformStats = (data: SummaryData): any[] => {
       value: formattedValue,
       rawValue: value.value,
       trend: value.trend,
+      prev: formattedprevValue
     };
   });
 };
+
+export const todayDate = () => {
+  const today = new Date();
+  return dayjs(today);
+}
