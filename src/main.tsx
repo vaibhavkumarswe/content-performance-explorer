@@ -4,6 +4,9 @@ import { BrowserRouter } from "react-router-dom";
 import { SnackbarProvider } from "notistack";
 import App from "./App.tsx";
 import { DashboardProvider } from "./context/DashboardContext.tsx";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import "dayjs/locale/de";
+import { LocalizationProvider } from "@mui/x-date-pickers";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -13,7 +16,9 @@ createRoot(document.getElementById("root")!).render(
           maxSnack={3}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
-          <App />
+          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+            <App />
+          </LocalizationProvider>
         </SnackbarProvider>
       </DashboardProvider>
     </BrowserRouter>

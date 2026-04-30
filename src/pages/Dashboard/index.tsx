@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Box, Container } from "@mui/material";
 import { Header } from "../../components/Layout/Header";
 import { StatCardsGrid } from "../../components/Dashboard/StatCardsGrid";
 import { PagesTableSection } from "../../components/Dashboard/PagesTableSection";
 import { PageDetailsPanel } from "../../components/Dashboard/PageDetailsPanel";
+import { useSearchParams } from "react-router-dom";
 
 import CTACards from "../../data/summary.json";
 import Pages from "../../data/pages/pages.json";
@@ -18,9 +20,34 @@ import type {
   SummaryResponse,
 } from "../../types/api";
 import { useNotification } from "../../hooks/useNotification";
+import dayjs from "dayjs";
+
+const queryKeys = {
+  search: "search",
+  sectionFilter: "section",
+  statusFilter: "status",
+  startDate: "start_date",
+  endDate: "end_date",
+};
 
 export default function Dashboard() {
   const { showError, showInfo } = useNotification();
+  //read the query params
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const searchQ = searchParams.get(queryKeys.search) || "";
+  const sectionFilterQ = searchParams.get(queryKeys.sectionFilter) || "";
+  const statusFilterQ = searchParams.get(queryKeys.statusFilter) || "";
+  const startDateQ = searchParams.get(queryKeys.startDate) || "";
+  const endDateQ = searchParams.get(queryKeys.endDate) || "";
+
+  const queryStates = {
+    search: searchQ,
+    sectionFilter: sectionFilterQ,
+    statusFilter: statusFilterQ,
+    startDate: dayjs(startDateQ).isValid() ? startDateQ : "",
+    endDate: dayjs(endDateQ).isValid() ? endDateQ : "",
+  };
 
   const [data, setData] = useState<{
     summary: {
@@ -79,6 +106,7 @@ export default function Dashboard() {
     pageSize,
     sortBy,
     sortDirection,
+    monthlyRange,
   } = dashboardState;
 
   const filteredPages = useMemo(() => {
@@ -169,7 +197,7 @@ export default function Dashboard() {
         pages: { ...prev.pages, loading: true },
       }));
 
-      await new Promise((resolve) => setTimeout(resolve, 1200));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       const response = Pages as PagesResponse;
       const sectionFilterData = Array.from(
         new Set(response.data.map((page) => page.section)),
@@ -201,11 +229,25 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function loadData() {
-      await fetchSummaryData();
-      await fetchTableData();
+      await Promise.allSettled([fetchSummaryData(), fetchTableData()]);
     }
-
     loadData();
+    dispatch({ type: "SET_SEARCH", payload: queryStates?.search || "" });
+    dispatch({
+      type: "SET_SECTION_FILTER",
+      payload: queryStates?.sectionFilter || "",
+    });
+    dispatch({
+      type: "SET_STATUS_FILTER",
+      payload: queryStates?.statusFilter || "",
+    });
+    dispatch({
+      type: "SET_MONTHLY_RANGE",
+      payload: {
+        start_date: queryStates.startDate,
+        end_date: queryStates.endDate,
+      },
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -242,6 +284,10 @@ export default function Dashboard() {
       setSelectedPage({ data: null, loading: false, error: "Failed to load" });
     }
   };
+
+  useEffect(() => {}, [monthlyRange]);
+
+  console.log(monthlyRange, "monthlyRange");
 
   return (
     <Box

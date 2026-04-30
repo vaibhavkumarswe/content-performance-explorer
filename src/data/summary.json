@@ -2,23 +2,29 @@
   "data": {
     "pageviews": {
       "value": 45231,
-      "trend": 12.3
+      "trend": 12.3,
+      "prevValue": 12000
     },
     "unique_visitors": {
       "value": 28102,
-      "trend": 8.7
+      "trend": 8.7,
+      "prevValue": 22000
     },
     "avg_time_on_page": {
       "value": 154,
-      "trend": 5.2
+      "trend": 5.2,
+      "prevValue": 120
     },
     "bounce_rate": {
       "value": 42.1,
-      "trend": -1.8
+      "trend": -1.8,
+      "prevValue": 32.0
     }
   },
   "period": {
     "start_date": "2025-03-01",
-    "end_date": "2025-03-31"
+    "end_date": "2025-03-31",
+    "prev_start_date": "2025-02-01",
+    "prev_end_date": "2025-02-28"
   }
 }
